@@ -5,6 +5,7 @@ import com.oracle.svm.core.annotate.Delete;
 import i2p.lobster.store.dtos.CreateCategoryDto;
 import i2p.lobster.store.dtos.UpdateCategoryDto;
 import i2p.lobster.store.models.Category;
+import i2p.lobster.store.models.Product;
 import i2p.lobster.store.repository.CategoryRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -50,12 +52,20 @@ public class CategoryController {
         }
     }
 
+    @GetMapping("/{id}/products")
+    public List<Product> getCategoryProducts(@PathVariable Long id) {
+        Category toSearch = categoryRepository.findById(id).orElseThrow(() -> new HttpClientErrorException(HttpStatus.NOT_FOUND));
+        return toSearch.getProducts();
+
+    }
+
 
 
     @GetMapping
     public List<Category> getAllCategories(){
         return categoryRepository.findAll();
     }
+
 
     @PatchMapping(path="/{id}")
     public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody UpdateCategoryDto dto){
@@ -75,6 +85,8 @@ public class CategoryController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
 
     @DeleteMapping(path="/{id}")
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id){
